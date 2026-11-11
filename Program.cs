@@ -17,7 +17,7 @@ namespace HomeApplianceSystem
             {
                 Console.WriteLine();
                 Console.WriteLine("Choose an option:");
-                Console.WriteLine("1. Add appliance");
+                Console.WriteLine("1. Add refrigerator");
                 Console.WriteLine("2. Show all appliances");
                 Console.WriteLine("3. Show summary");
                 Console.WriteLine("4. Update appliance status");
@@ -29,7 +29,7 @@ namespace HomeApplianceSystem
                 switch (choice?.Trim())
                 {
                     case "1":
-                        AddAppliance();
+                        AddRefrigerator();
                         break;
 
                     case "2":
@@ -55,9 +55,45 @@ namespace HomeApplianceSystem
             }
         }
 
-        private static void AddAppliance()
+        private static void AddRefrigerator()
         {
-            Console.WriteLine("Appliance types will be added in the next stage.");
+            try
+            {
+                Console.Write("Serial number: ");
+                string serialNumber = Console.ReadLine() ?? string.Empty;
+
+                Console.Write("Brand: ");
+                string brand = Console.ReadLine() ?? string.Empty;
+
+                Console.Write("Model: ");
+                string model = Console.ReadLine() ?? string.Empty;
+
+                Console.Write("Status: ");
+                string status = Console.ReadLine() ?? "Under Maintenance";
+
+                Console.Write("Parts cost: ");
+                decimal partsCost = decimal.Parse(Console.ReadLine() ?? "0");
+
+                Console.Write("Needs gas refill? (Y/N): ");
+                bool needsGasRefill = ReadYesNo();
+
+                Appliance appliance = new Refrigerator(
+                    serialNumber,
+                    brand,
+                    model,
+                    status,
+                    partsCost,
+                    needsGasRefill);
+
+                appliances.Add(appliance);
+
+                Console.WriteLine(
+                    $"Appliance {appliance.SerialNumber} was added successfully.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error creating appliance: {ex.Message}");
+            }
         }
 
         private static void ShowAllAppliances()
@@ -83,6 +119,23 @@ namespace HomeApplianceSystem
             Console.WriteLine($"Repaired: {Appliance.RepairedCount}");
             Console.WriteLine($"Under maintenance: {Appliance.UnderMaintenanceCount}");
             Console.WriteLine($"Total repair cost: {Appliance.TotalRepairCost:C}");
+        }
+
+        private static bool ReadYesNo()
+        {
+            while (true)
+            {
+                string? answer = Console.ReadLine();
+
+                if (answer != null &&
+                    (answer.Trim().Equals("Y", StringComparison.OrdinalIgnoreCase) ||
+                     answer.Trim().Equals("N", StringComparison.OrdinalIgnoreCase)))
+                {
+                    return answer.Trim().Equals("Y", StringComparison.OrdinalIgnoreCase);
+                }
+
+                Console.Write("Please enter Y or N: ");
+            }
         }
     }
 }
