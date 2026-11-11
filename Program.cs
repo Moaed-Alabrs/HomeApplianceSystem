@@ -17,7 +17,7 @@ namespace HomeApplianceSystem
             {
                 Console.WriteLine();
                 Console.WriteLine("Choose an option:");
-                Console.WriteLine("1. Add refrigerator");
+                Console.WriteLine("1. Add appliance");
                 Console.WriteLine("2. Show all appliances");
                 Console.WriteLine("3. Show summary");
                 Console.WriteLine("4. Update appliance status");
@@ -29,7 +29,7 @@ namespace HomeApplianceSystem
                 switch (choice?.Trim())
                 {
                     case "1":
-                        AddRefrigerator();
+                        AddAppliance();
                         break;
 
                     case "2":
@@ -41,7 +41,7 @@ namespace HomeApplianceSystem
                         break;
 
                     case "4":
-                        Console.WriteLine("Status update will be added later.");
+                        Console.WriteLine("Status update will be added in the final stage.");
                         break;
 
                     case "5":
@@ -55,8 +55,21 @@ namespace HomeApplianceSystem
             }
         }
 
-        private static void AddRefrigerator()
+        private static void AddAppliance()
         {
+            Console.WriteLine("\nSelect appliance type:");
+            Console.WriteLine("1. Refrigerator");
+            Console.WriteLine("2. Washing Machine");
+            Console.Write("Type: ");
+
+            string? typeInput = Console.ReadLine();
+
+            if (!int.TryParse(typeInput, out int typeNumber))
+            {
+                Console.WriteLine("Invalid appliance type.");
+                return;
+            }
+
             try
             {
                 Console.Write("Serial number: ");
@@ -74,16 +87,42 @@ namespace HomeApplianceSystem
                 Console.Write("Parts cost: ");
                 decimal partsCost = decimal.Parse(Console.ReadLine() ?? "0");
 
-                Console.Write("Needs gas refill? (Y/N): ");
-                bool needsGasRefill = ReadYesNo();
+                Appliance appliance;
 
-                Appliance appliance = new Refrigerator(
-                    serialNumber,
-                    brand,
-                    model,
-                    status,
-                    partsCost,
-                    needsGasRefill);
+                switch (typeNumber)
+                {
+                    case 1:
+                        Console.Write("Needs gas refill? (Y/N): ");
+                        bool needsGasRefill = ReadYesNo();
+
+                        appliance = new Refrigerator(
+                            serialNumber,
+                            brand,
+                            model,
+                            status,
+                            partsCost,
+                            needsGasRefill);
+
+                        break;
+
+                    case 2:
+                        Console.Write("Motor needs repair? (Y/N): ");
+                        bool motorNeedsRepair = ReadYesNo();
+
+                        appliance = new WashingMachine(
+                            serialNumber,
+                            brand,
+                            model,
+                            status,
+                            partsCost,
+                            motorNeedsRepair);
+
+                        break;
+
+                    default:
+                        Console.WriteLine("Invalid appliance type.");
+                        return;
+                }
 
                 appliances.Add(appliance);
 
