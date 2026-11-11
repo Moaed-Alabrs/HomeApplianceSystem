@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace HomeApplianceSystem
 {
@@ -26,29 +25,29 @@ namespace HomeApplianceSystem
                 Console.Write("Your choice: ");
 
                 string? choice = Console.ReadLine();
-                if (string.IsNullOrWhiteSpace(choice))
-                {
-                    Console.WriteLine("Please enter a valid option.");
-                    continue;
-                }
 
-                switch (choice.Trim())
+                switch (choice?.Trim())
                 {
                     case "1":
                         AddAppliance();
                         break;
+
                     case "2":
                         ShowAllAppliances();
                         break;
+
                     case "3":
                         ShowSummary();
                         break;
+
                     case "4":
-                        UpdateStatus();
+                        Console.WriteLine("Status update will be added later.");
                         break;
+
                     case "5":
                         Console.WriteLine("Goodbye!");
                         return;
+
                     default:
                         Console.WriteLine("Invalid option. Please try again.");
                         break;
@@ -56,3 +55,34 @@ namespace HomeApplianceSystem
             }
         }
 
+        private static void AddAppliance()
+        {
+            Console.WriteLine("Appliance types will be added in the next stage.");
+        }
+
+        private static void ShowAllAppliances()
+        {
+            if (appliances.Count == 0)
+            {
+                Console.WriteLine("No appliances in the system.");
+                return;
+            }
+
+            foreach (Appliance appliance in appliances)
+            {
+                Console.WriteLine("---------------------------");
+                appliance.DisplayInfo();
+                Console.WriteLine($"Estimated repair cost: {appliance.CalculateCost():C}");
+            }
+        }
+
+        private static void ShowSummary()
+        {
+            Console.WriteLine("\nSummary:");
+            Console.WriteLine($"Total appliances: {Appliance.TotalAppliances}");
+            Console.WriteLine($"Repaired: {Appliance.RepairedCount}");
+            Console.WriteLine($"Under maintenance: {Appliance.UnderMaintenanceCount}");
+            Console.WriteLine($"Total repair cost: {Appliance.TotalRepairCost:C}");
+        }
+    }
+}
