@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace HomeApplianceSystem
 {
@@ -26,7 +27,13 @@ namespace HomeApplianceSystem
 
                 string? choice = Console.ReadLine();
 
-                switch (choice?.Trim())
+                if (string.IsNullOrWhiteSpace(choice))
+                {
+                    Console.WriteLine("Please enter a valid option.");
+                    continue;
+                }
+
+                switch (choice.Trim())
                 {
                     case "1":
                         AddAppliance();
@@ -41,7 +48,7 @@ namespace HomeApplianceSystem
                         break;
 
                     case "4":
-                        Console.WriteLine("Status update will be added in the final stage.");
+                        UpdateStatus();
                         break;
 
                     case "5":
@@ -60,6 +67,7 @@ namespace HomeApplianceSystem
             Console.WriteLine("\nSelect appliance type:");
             Console.WriteLine("1. Refrigerator");
             Console.WriteLine("2. Washing Machine");
+            Console.WriteLine("3. Air Conditioner");
             Console.Write("Type: ");
 
             string? typeInput = Console.ReadLine();
@@ -72,7 +80,7 @@ namespace HomeApplianceSystem
 
             try
             {
-                Console.Write("Serial number: ");
+                Console.Write("Serial number (REF###, WAS###, AIR###): ");
                 string serialNumber = Console.ReadLine() ?? string.Empty;
 
                 Console.Write("Brand: ");
@@ -81,7 +89,7 @@ namespace HomeApplianceSystem
                 Console.Write("Model: ");
                 string model = Console.ReadLine() ?? string.Empty;
 
-                Console.Write("Status: ");
+                Console.Write("Status (Under Maintenance / Repaired / Available): ");
                 string status = Console.ReadLine() ?? "Under Maintenance";
 
                 Console.Write("Parts cost: ");
@@ -119,12 +127,27 @@ namespace HomeApplianceSystem
 
                         break;
 
+                    case 3:
+                        Console.Write("Needs gas refill? (Y/N): ");
+                        bool acNeedsGasRefill = ReadYesNo();
+
+                        appliance = new AirConditioner(
+                            serialNumber,
+                            brand,
+                            model,
+                            status,
+                            partsCost,
+                            acNeedsGasRefill);
+
+                        break;
+
                     default:
                         Console.WriteLine("Invalid appliance type.");
                         return;
                 }
 
                 appliances.Add(appliance);
+                appliance.StatusChanged += OnStatusChanged;
 
                 Console.WriteLine(
                     $"Appliance {appliance.SerialNumber} was added successfully.");
@@ -147,7 +170,8 @@ namespace HomeApplianceSystem
             {
                 Console.WriteLine("---------------------------");
                 appliance.DisplayInfo();
-                Console.WriteLine($"Estimated repair cost: {appliance.CalculateCost():C}");
+                Console.WriteLine(
+                    $"Estimated repair cost: {appliance.CalculateCost():C}");
             }
         }
 
@@ -156,8 +180,80 @@ namespace HomeApplianceSystem
             Console.WriteLine("\nSummary:");
             Console.WriteLine($"Total appliances: {Appliance.TotalAppliances}");
             Console.WriteLine($"Repaired: {Appliance.RepairedCount}");
-            Console.WriteLine($"Under maintenance: {Appliance.UnderMaintenanceCount}");
+            Console.WriteLine(
+                $"Under maintenance: {Appliance.UnderMaintenanceCount}");
             Console.WriteLine($"Total repair cost: {Appliance.TotalRepairCost:C}");
+            Console.WriteLine(
+                $"Available appliances: {Appliance.CountByStatus("Available")}");
+        }
+
+        private static void UpdateStatus()
+        {
+            if (appliances.Count == 0)
+            {
+                Console.WriteLine("No appliances available to update.");
+                return;
+            }
+
+            Console.WriteLine("Choose an appliance by serial number:");
+
+            foreach (Appliance appliance in appliances)
+            {
+                Console.WriteLine($"- {appliance.SerialNumber}");
+            }
+
+            Console.Write("Serial number: ");
+            string serial = Console.ReadLine() ?? string.Empty;
+
+            Appliance? target = appliances.FirstOrDefault(
+                appliance => appliance.SerialNumber == serial);
+
+            if (target == null)
+            {
+                Console.WriteLine("Appliance not found.");
+                return;
+            }
+
+            Console.Write(
+                "New status (Under Maintenance / Repaired / Available): ");
+
+            string newStatus = Console.ReadLine() ?? string.Empty;
+
+            try
+            {
+                target.Status = newStatus;
+
+                Console.WriteLine(
+                    $"Status updated for {target.SerialNumber}.");
+
+                if (target.Status == "Repaired")
+                {
+                    Console.WriteLine(
+                        $"[EVENT] {target.SerialNumber} has been repaired " +
+                        "and is ready for delivery.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}");
+            }
+        }
+
+        private static void OnStatusChanged(
+            Appliance appliance,
+            string oldStatus,
+            string newStatus)
+        {
+            Console.WriteLine(
+                $"[EVENT] {appliance.SerialNumber}: " +
+                $"{oldStatus} -> {newStatus}");
+
+            if (newStatus == "Available")
+            {
+                Console.WriteLine(
+                    $"[NOTICE] {appliance.SerialNumber} is ready " +
+                    "for customer collection.");
+            }
         }
 
         private static bool ReadYesNo()
@@ -170,7 +266,9 @@ namespace HomeApplianceSystem
                     (answer.Trim().Equals("Y", StringComparison.OrdinalIgnoreCase) ||
                      answer.Trim().Equals("N", StringComparison.OrdinalIgnoreCase)))
                 {
-                    return answer.Trim().Equals("Y", StringComparison.OrdinalIgnoreCase);
+                    return answer.Trim().Equals(
+                        "Y",
+                        StringComparison.OrdinalIgnoreCase);
                 }
 
                 Console.Write("Please enter Y or N: ");
